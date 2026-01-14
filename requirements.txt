@@ -1,0 +1,13 @@
+blinker==1.9.0
+click==8.3.0
+Flask==3.1.2
+itsdangerous==2.2.0
+Jinja2==3.1.6
+MarkupSafe==3.0.3
+Werkzeug==3.1.3
+pymongo==4.10.1
+Flask-Mail==0.10.0
+requests
+bcrypt==4.0.1 # to help not store passwords in plain text
+Flask-Limiter==3.5.0 #to use rate limit features to prevent DoS attacks and brute force (or atleast make them much more costly for attackers)
+Flask-WTF==1.2.1 #this is used to prevent cross-site request forgery (where an attacker sends requests to the browser for operations for the site without the user's consent. This is prevented through CSRF tokens which, if the attacker does not have, cannot make valid requests)

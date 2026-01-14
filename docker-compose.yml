@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    container_name: daap_secdov_web
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_SECRET_KEY=super_secret_key
+      - MONGO_URI=mongodb://SecDovDB_Admin:StrongDBKey_98hvA1bQ@mongo:27017/daap_secdov?authSource=admin
+      - EMAIL_USER=securemessenger01@gmail.com
+      - EMAIL_PASS=sbyg jdif krml mana
+      - RECAPTCHA_SITE_KEY=6LfG8OcrAAAAAOZMvOt8oWri5QnC4YJsj4xk-SE_
+      - RECAPTCHA_SECRET_KEY=6LfG8OcrAAAAAIyx0sZpEJWfxwN9RECEklY_srVX
+    depends_on:
+      - mongo
+    volumes:
+      - .:/app
+    restart: always
+
+  mongo:
+    image: mongo:7.0
+    container_name: daap_secdov_mongo
+    # Uncomment ports if you want to connect from host with Compass, etc.
+    # ports:
+    #   - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=SecDovDB_Admin
+      - MONGO_INITDB_ROOT_PASSWORD=StrongDBKey_98hvA1bQ
+      - MONGO_INITDB_DATABASE=daap_secdov
+    volumes:
+      - mongo_data:/data/db
+    restart: always
+
+volumes:
+  mongo_data:
+    driver: local
