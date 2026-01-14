@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Secure Messenger</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <nav>
+        <a href="{{ url_for('home') }}">Home</a> | 
+        <a href="{{ url_for('register') }}">Register</a>
+    </nav>
+    
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div style="color: blue; margin: 10px 0;">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <form method="POST" id="login-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        
+        <div>
+            <p><a href="{{ url_for('forgot_password') }}">Forgot your password?</a></p>
+        </div>
+        <div>
+            <button type="submit">Login</button>
+        </div>
+    </form>
+
+    <!-- ----------------------------------------------------- -->
+    <!-- reCAPTCHA V3 SCRIPTS AND HANDLER -->
+    <!-- ----------------------------------------------------- -->
+    <!-- 1. Load the reCAPTCHA V3 API script -->
+    <script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha_site_key }}"></script>
+
+    <script>
+        // 2. Wait for the document to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('login-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    // Prevent the default form submission (step 1)
+                    e.preventDefault();
+
+                    // Run the invisible reCAPTCHA check
+                    grecaptcha.ready(function() {
+                        // The action 'user_login' MUST match the RECAPTCHA_ACTION in app.py
+                        grecaptcha.execute('{{ recaptcha_site_key }}', {action: 'user_login'}).then(function(token) {
+                            
+                            // Check if the token input already exists to prevent duplicates
+                            let tokenInput = form.querySelector('input[name="g-recaptcha-response"]');
+                            
+                            if (!tokenInput) {
+                                // 3. Create a hidden input field to hold the token (step 2)
+                                tokenInput = document.createElement('input');
+                                tokenInput.type = 'hidden';
+                                tokenInput.name = 'g-recaptcha-response';
+                                form.appendChild(tokenInput);
+                            }
+                            
+                            // 4. Set the token value and resubmit the form (step 3)
+                            tokenInput.value = token;
+                            form.submit();
+                        });
+                    });
+                });
+            }
+        });
+    </script>
+    <!-- ----------------------------------------------------- -->
+</body>
+</html>

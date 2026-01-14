@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ group.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        .chat-header {
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .back-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        .back-button:hover {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+        .manage-button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .manage-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .group-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        .message.sent {
+            align-items: flex-end;
+        }
+        .message.received {
+            align-items: flex-start;
+        }
+        .message-bubble {
+            max-width: 60%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        .message.sent .message-bubble {
+            background: #28a745;
+            color: white;
+        }
+        .message.received .message-bubble {
+            background: #e5e5ea;
+            color: black;
+        }
+        .message-info {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+            padding: 0 10px;
+        }
+        .message.sent .message-info {
+            display: flex;
+            align-items: center;
+        }
+        .delete-button {
+            background: none;
+            border: none;
+            color: #cc0000;
+            font-size: 10px;
+            cursor: pointer;
+            margin-left: 5px;
+            padding: 0;
+            line-height: 1;
+            text-decoration: underline;
+        }
+        .delete-button:hover {
+            color: #ff0000;
+        }
+        .chat-input {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #ddd;
+        }
+        .chat-input form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .chat-input input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+        }
+        .chat-input input[type="text"]:focus {
+            border-color: #28a745;
+        }
+        .chat-input button {
+            padding: 12px 25px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .chat-input button:hover {
+            background: #218838;
+        }
+        .file-upload-label {
+            padding: 10px 15px;
+            background: #6c757d;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 15px;
+            white-space: nowrap;
+            height: 40px;
+            line-height: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .file-upload-label:hover {
+            background: #5a6268;
+        }
+        .file-link {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+            display: block;
+            padding: 8px 10px;
+            background: #e7f3ff;
+            border-radius: 4px;
+            border: 1px solid #cce5ff;
+            word-break: break-all;
+        }
+        .file-link:hover {
+            text-decoration: underline;
+            background: #cce5ff;
+        }
+        .empty-state {
+            text-align: center;
+            color: #999;
+            margin-top: 50px;
+        }
+        .flash-messages {
+            margin: 10px 20px;
+        }
+        .alert {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="header-left">
+                <button class="back-button" onclick="window.location.href='{{ url_for('home') }}'">←</button>
+                <div>
+                    <h2 style="margin: 0;">
+                        {{ group.name }}
+                        {% if is_admin %}<span class="group-badge">ADMIN</span>{% endif %}
+                    </h2>
+                    <div style="font-size: 12px; opacity: 0.9;">{{ group.members|length }} members</div>
+                </div>
+            </div>
+            <a href="{{ url_for('groups.manage_group', group_id=group.group_id) }}" class="manage-button">
+                Manage
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="chat-messages" id="messages">
+            {% if conversation|length > 0 %}
+                {% for msg in conversation %}
+                    <div class="message {% if msg.sender == username %}sent{% else %}received{% endif %}">
+                        <div class="message-bubble">
+                            {% if msg.filename %}
+                                <a href="{{ url_for('download_file', filename=msg.filename) }}" 
+                                   class="file-link" download>
+                                    ⬇️ Download Shared File: **{{ msg.content|replace("File shared: ", "") }}**
+                                </a>
+                            {% else %}
+                                {{ msg.content }}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="message-info">
+                            <span>
+                                {{ msg.sender }} • {{ msg.timestamp.strftime('%Y-%m-%d %H:%M') if msg.timestamp else 'N/A' }}
+                            </span>
+
+                            {% if msg.sender == username %}
+                                <form method="POST" action="{{ url_for('groups.delete_group_message', message_id=msg._id) }}"
+                                      style="display: inline-block; margin: 0; padding: 0;"
+                                      onsubmit="return confirm('Are you sure you want to delete this message? This action cannot be undone.');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="delete-button">
+                                        (Delete)
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <p>No messages yet. Be the first to send one!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="chat-input">
+            <form method="POST" action="{{ url_for('groups.send_group_message') }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="group_id" value="{{ group.group_id }}">
+                
+                <label for="file-upload" class="file-upload-label">
+                    📎 Choose File
+                </label>
+                <input type="file" id="file-upload" name="file" style="display: none;">
+                
+                <input type="text" name="content" placeholder="Type a message or leave blank for file only..." autofocus>
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Auto-scroll to bottom on load
+        window.onload = function() {
+            var messages = document.getElementById('messages');
+            messages.scrollTop = messages.scrollHeight;
+        };
+    </script>
+</body>
+</html>

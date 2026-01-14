@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat with {{ friend }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        .chat-header {
+            background: #007bff;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .back-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        .back-button:hover {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        .message.sent {
+            align-items: flex-end;
+        }
+        .message.received {
+            align-items: flex-start;
+        }
+        .message-bubble {
+            max-width: 60%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        .message.sent .message-bubble {
+            background: #007bff;
+            color: white;
+        }
+        .message.received .message-bubble {
+            background: #e5e5ea;
+            color: black;
+        }
+        .message-info {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+            padding: 0 10px;
+        }
+        
+        /* 🔔 NEW STYLES for Sent Message Info (to align Delete button) */
+        .message.sent .message-info {
+            display: flex;
+            align-items: center;
+            /* Ensures the timestamp and button are on the same line */
+        }
+
+        /* 🔔 NEW STYLE for Delete Button */
+        .delete-button {
+            background: none;
+            border: none;
+            color: #cc0000; /* Red color for delete action */
+            font-size: 10px;
+            cursor: pointer;
+            margin-left: 5px;
+            padding: 0;
+            line-height: 1;
+            text-decoration: underline; /* Make it look like a link */
+        }
+        
+        .delete-button:hover {
+            color: #ff0000;
+        }
+        /* End NEW STYLES */
+
+        .chat-input {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #ddd;
+        }
+        .chat-input form {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+        }
+        .chat-input input[type="text"]:focus {
+            border-color: #007bff;
+        }
+        .chat-input button {
+            padding: 12px 25px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .chat-input button:hover {
+            background: #0056b3;
+        }
+        .empty-state {
+            text-align: center;
+            color: #999;
+            margin-top: 50px;
+        }
+        .flash-messages {
+            margin: 10px 20px;
+        }
+        .alert {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .chat-input form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        }
+    
+        .chat-input input[type="text"] {
+        flex: 1; 
+        }
+
+        .file-upload-label {
+        padding: 10px 15px;
+        background: #6c757d; 
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 15px;
+        white-space: nowrap;
+        height: 40px; 
+        line-height: 20px; 
+        box-sizing: border-box;
+        text-align: center;
+        }
+
+        .file-upload-label:hover {
+        background: #5a6268;
+        }
+    
+        .file-link {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: bold;
+        display: block; 
+        padding: 8px 10px;
+        background: #e7f3ff;
+        border-radius: 4px;
+        border: 1px solid #cce5ff;
+        word-break: break-all; 
+        }
+    
+        .file-link:hover {
+        text-decoration: underline;
+        background: #cce5ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <button class="back-button" onclick="window.location.href='{{ url_for('home') }}'">←</button>
+            <h2 style="margin: 0;">{{ friend }}</h2>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="chat-messages" id="messages">
+            {% if conversation|length > 0 %}
+                {% for msg in conversation %}
+                    <div class="message {% if msg.sender == username %}sent{% else %}received{% endif %}">
+                        <div class="message-bubble">
+                            {% if msg.filename %}
+                                <a href="{{ url_for('download_file', filename=msg.filename) }}" 
+                                    class="file-link" download>
+                                        ⬇️ Download Shared File: **{{ msg.content|replace("File shared: ", "") }}**
+                                </a>
+                            {% else %}
+                                {{ msg.content }}
+                            {% endif %}
+                        </div>
+
+                        <!--  START MODIFIED MESSAGE INFO BLOCK  -->
+                        <div class="message-info">
+                            {% if msg.sender == username %}
+                                <!-- This is a message you sent -->
+                                You • {{ msg.timestamp }}
+                                
+                                <!-- Delete Button Form -->
+                                <form method="POST" action="{{ url_for('delete_message', message_id=msg._id) }}"
+                                      style="display: inline-block; margin: 0; padding: 0;"
+                                      onsubmit="return confirm('Are you sure you want to delete this message? This action cannot be undone.');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="delete-button">
+                                        (Delete)
+                                    </button>
+                                </form>
+                            {% else %}
+                                <!-- This is a message you received -->
+                                {{ msg.sender }} • {{ msg.timestamp }}
+                            {% endif %}
+                        </div>
+                        <!-- END MODIFIED MESSAGE INFO BLOCK  -->
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <p>No messages yet. Start the conversation!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="chat-input">
+            <form method="POST" action="{{ url_for('send_message') }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="receiver" value="{{ friend }}">
+        
+                <label for="file-upload" class="file-upload-label">
+                    📎 Choose File
+                </label>
+                <input type="file" id="file-upload" name="file" style="display: none;">
+                <input type="text" name="content" placeholder="Type a message or leave blank for file only..." required autofocus>
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Auto-scroll to bottom on load
+        window.onload = function() {
+            var messages = document.getElementById('messages');
+            messages.scrollTop = messages.scrollHeight;
+        };
+    </script>
+</body>
+</html>

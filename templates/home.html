@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home - Secure Messenger</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        nav {
+            margin-bottom: 20px;
+        }
+        nav a {
+            color: #007bff;
+            text-decoration: none;
+            padding: 8px 15px;
+            background: #e7f3ff;
+            border-radius: 4px;
+        }
+        nav a:hover {
+            background: #cce5ff;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        h2, h3 {
+            color: #555;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 30px 0;
+        }
+        .flash-message {
+            padding: 12px 20px;
+            margin: 15px 0;
+            border-radius: 4px;
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 3px solid #007bff;
+        }
+        form {
+            margin: 15px 0;
+        }
+        input[type="text"], select, textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button, input[type="submit"] {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover, input[type="submit"]:hover {
+            background: #0056b3;
+        }
+        button[name="action"][value="reject"] {
+            background: #dc3545;
+        }
+        button[name="action"][value="reject"]:hover {
+            background: #c82333;
+        }
+        button[name="action"][value="accept"] {
+            background: #28a745;
+        }
+        button[name="action"][value="accept"]:hover {
+            background: #218838;
+        }
+        .chat-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: inherit;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+        .chat-list-item:hover {
+            background: #f8f9fa;
+        }
+        .chat-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .chat-info {
+            flex: 1;
+            margin-left: 15px;
+        }
+        .chat-name {
+            font-weight: 500;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        .chat-meta {
+            font-size: 13px;
+            color: #666;
+        }
+        .chat-arrow {
+            font-size: 20px;
+        }
+        .badge {
+            background: #28a745;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Welcome, {{ username }}</h1>
+        <nav>
+            <a href="{{ url_for('profile') }}">Profile Management</a> | 
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </nav>
+
+        <div style="background: #e7f3ff; padding: 12px 20px; border-radius: 4px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>Account Activity:</strong> {{ login_count }} total logins
+            </div>
+            <a href="{{ url_for('account_activity') }}" style="padding: 8px 15px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; font-size: 14px;">
+                View Details
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-message">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- System Notifications -->
+        {% if notifications %}
+        <div style="margin: 20px 0;">
+            {% for notif in notifications %}
+                <div style="padding: 15px 20px; margin: 10px 0; border-radius: 4px; border-left: 4px solid 
+                            {% if notif.type == 'warning' %}#ffc107{% else %}#17a2b8{% endif %}; 
+                            background: {% if notif.type == 'warning' %}#fff3cd{% else %}#d1ecf1{% endif %};">
+                    <strong>Notification:</strong> {{ notif.message }}
+                    <span style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                        {{ notif.timestamp.strftime('%Y-%m-%d %H:%M') if notif.timestamp else '' }}
+                    </span>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <hr>
+
+        <h2>Friends</h2>
+        {% if friends %}
+            <ul>
+            {% for friend in friends %}
+                <li>{{ friend }}</li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No friends yet.</p>
+        {% endif %}
+
+        <h2>Send Friend Request</h2>
+        <form method="POST" action="{{ url_for('send_friend_request') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="text" name="to_user" placeholder="Enter username..." required>
+            <button type="submit">Send Request</button>
+        </form>
+
+        <h3>Incoming Friend Requests</h3>
+        {% if incoming_reqs %}
+            <ul>
+            {% for req in incoming_reqs %}
+                <li>{{ req.from }}
+                    <form method="POST" action="{{ url_for('respond_friend_request') }}" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <input type="hidden" name="from_user" value="{{ req.from }}">
+                        <button name="action" value="accept">Accept</button>
+                        <button name="action" value="reject">Reject</button>
+                    </form>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No incoming requests.</p>
+        {% endif %}
+
+        <h3>Outgoing Friend Requests</h3>
+        {% if outgoing_reqs %}
+            <ul>
+            {% for req in outgoing_reqs %}
+                <li>To {{ req.to }} - Pending</li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No outgoing requests.</p>
+        {% endif %}
+
+        <hr>
+
+        <h2>Chats</h2>
+        
+        <!-- Group Invitations -->
+        {% if group_invites|length > 0 %}
+        <div style="margin-bottom: 20px; padding: 15px; background: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;">
+            <h3 style="margin-top: 0;">Group Invitations ({{ group_invites|length }})</h3>
+            {% for invite in group_invites %}
+                <div style="padding: 10px; margin: 5px 0; background: white; border-radius: 4px; 
+                            display: flex; justify-content: space-between; align-items: center;">
+                    <span>
+                        <strong>{{ invite.group_name }}</strong> 
+                        <em>(from {{ invite.from_user }})</em>
+                    </span>
+                    <div>
+                        <form method="POST" action="{{ url_for('groups.respond_group_invitation') }}"
+                              style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <input type="hidden" name="group_id" value="{{ invite.group_id }}">
+                            <input type="hidden" name="action" value="accept">
+                            <button type="submit" style="padding: 5px 15px; background: #28a745; 
+                                    color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                Accept
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('groups.respond_group_invitation') }}"
+                              style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <input type="hidden" name="group_id" value="{{ invite.group_id }}">
+                            <input type="hidden" name="action" value="reject">
+                            <button type="submit" style="padding: 5px 15px; background: #dc3545; 
+                                    color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                Reject
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Friends Chats -->
+        {% if friends %}
+        <div style="margin-bottom: 20px;">
+            <h3>Direct Messages</h3>
+            <div style="background: white; border-radius: 8px; overflow: hidden; border: 1px solid #ddd;">
+                {% for friend in friends %}
+                    <a href="{{ url_for('chat', friend_username=friend) }}" class="chat-list-item">
+                        <div style="display: flex; align-items: center;">
+                            <div class="chat-avatar" style="background: #007bff;">
+                                {{ friend[0].upper() }}
+                            </div>
+                            <div class="chat-info">
+                                <div class="chat-name">{{ friend }}</div>
+                                <div class="chat-meta">Click to view chat</div>
+                            </div>
+                        </div>
+                        <div class="chat-arrow" style="color: #007bff;">→</div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+            <p style="color: #666; font-style: italic;">No friends yet. Send friend requests to start chatting!</p>
+        {% endif %}
+
+        <!-- Groups Chats -->
+        {% if user_groups|length > 0 %}
+        <div style="margin-bottom: 20px;">
+            <h3>Groups</h3>
+            <div style="background: white; border-radius: 8px; overflow: hidden; border: 1px solid #ddd;">
+                {% for group in user_groups %}
+                    <a href="{{ url_for('groups.group_chat', group_id=group.group_id) }}" class="chat-list-item">
+                        <div style="display: flex; align-items: center;">
+                            <div class="chat-avatar" style="background: #28a745;">
+                                {{ group.name[0].upper() }}
+                            </div>
+                            <div class="chat-info">
+                                <div class="chat-name">
+                                    {{ group.name }}
+                                    {% if username in group.admins %}
+                                        <span class="badge">ADMIN</span>
+                                    {% endif %}
+                                </div>
+                                <div class="chat-meta">{{ group.members|length }} members</div>
+                            </div>
+                        </div>
+                        <div class="chat-arrow" style="color: #28a745;">→</div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Create New Group -->
+        <div style="margin-top: 30px; padding: 20px; background: #f0f8ff; border-radius: 8px;">
+            <h3>Create New Group</h3>
+            <form method="POST" action="{{ url_for('groups.create_group') }}" style="display: flex; gap: 10px; align-items: center;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="text" name="group_name" placeholder="Group name" required 
+                       style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px;">
+                <button type="submit" style="padding: 10px 25px; background: #28a745; color: white; 
+                        border: none; border-radius: 4px; cursor: pointer; font-size: 15px;">
+                    Create Group
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile - Secure Messenger</title>
+</head>
+<body>
+    <h1>User Profile: {{ username }}</h1>
+    <nav>
+        <a href="{{ url_for('home') }}">Back to Home</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div style="color: blue; margin: 10px 0;">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <hr>
+
+    <h2>Update Information</h2>
+    <form method="POST" action="{{ url_for('update_profile') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div>
+            <label for="username">Username (Cannot be changed):</label>
+            <input type="text" id="username" name="username" value="{{ username }}" disabled>
+        </div>
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ email }}" required>
+        </div>
+        <div>
+            <button type="submit">Update Email</button>
+        </div>
+    </form>
+</body>
+</html>
